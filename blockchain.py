@@ -106,9 +106,27 @@ class Blockchain(object):
     def last_block(self):
         return self.chain[-1]
 
-    def add_node(self, address):
+    def add_node(self, address, role):
         parsed_url = urlparse(address)
-        self.nodes.add(parsed_url.netloc)
+        self.nodes.add((parsed_url.netloc, role))
+        
+                
+    @app.route('/nodes/add_nodes', methods=['POST'])
+    def add_nodes():
+        values = request.get_json()
+        nodes = values.get('nodes')
+        roles = values.get('roles')  # List of roles corresponding to the nodes
+    
+        if nodes is None or not isinstance(nodes, list) or not isinstance(roles, list):
+            return jsonify({'message': 'Invalid or missing nodes data'}), 400
+    
+        for node, role in zip(nodes, roles):
+            blockchain.add_node(node, role)  # Modify add_node to handle role
+            if role == 'voter' or role == 'candidate':
+                blockchain.add_transaction(sender="0", recipient=node, amount=1)
+    
+        node_list = list(blockchain.nodes)
+        return render_template('nodes_added.html', nodes=node_list)
 
     def valid_chain(self, chain):
         last_block = chain[0]
@@ -232,15 +250,15 @@ def get_winner():
     return jsonify(response), 200
 
 
-@app.route('/nodes/add_nodes', methods=['POST'])
-def add_nodes():
-    nodes = request.get_json().get('nodes')
-    if nodes is None or not isinstance(nodes, list):
-        return jsonify({'message': 'Invalid or missing nodes data'}), 400
-    for node in nodes:
-        blockchain.add_node(node)
-    node_list = list(blockchain.nodes)
-    return render_template('nodes_added.html', nodes=node_list)
+# @app.route('/nodes/add_nodes', methods=['POST'])
+# def add_nodes():
+#     nodes = request.get_json().get('nodes')
+#     if nodes is None or not isinstance(nodes, list):
+#         return jsonify({'message': 'Invalid or missing nodes data'}), 400
+#     for node in nodes:
+#         blockchain.add_node(node)
+#     node_list = list(blockchain.nodes)
+#     return render_template('nodes_added.html', nodes=node_list)
 
 @app.route('/nodes/sync', methods=['GET'])
 def sync():
