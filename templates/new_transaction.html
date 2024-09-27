@@ -6,42 +6,63 @@
     <title>New Transaction</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
     <style>
+        /* Reset default margin and padding */
+        body,
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6,
+        p,
+        ul,
+        ol,
+        figure,
+        figcaption {
+            margin: 0;
+            padding: 0;
+        }
+
         /* Custom styles for the page title and form */
         .page-title-container {
             padding: 1rem 0;
-            /* Matches the blocks.html padding */
             background: rgb(0, 81, 255);
-            /* Same color as blocks.html */
             color: #ffffff;
             margin-bottom: 2rem;
-            /* Consistent with blocks.html */
             border-radius: 0.5rem;
-            /* Consistent with blocks.html */
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            /* Consistent with blocks.html */
             text-align: center;
         }
 
         .page-title {
             font-size: 2.5rem;
-            /* Consistent with blocks.html */
             font-weight: 700;
-            /* Consistent with blocks.html */
         }
 
-        .footer {
-            position: fixed;
-            /* Consistent with blocks.html */
-            bottom: 0;
-            width: 100%;
-            height: 4rem;
-            /* Consistent with blocks.html */
+        footer {
             background-color: #343a40;
-            /* Consistent with blocks.html */
+            /* Dark gray background */
             color: white;
+            /* White text color */
             text-align: center;
+            /* Centered text */
             padding: 1rem 0;
-            /* Consistent with blocks.html */
+            /* Padding for top and bottom */
+            position: fixed;
+            /* Fixed at the bottom */
+            bottom: 0;
+            /* Stick to the bottom */
+            left: 0;
+            /* Span across all the way to the left */
+            width: 100%;
+            /* Full width */
+        }
+
+        /* Ensure the .container class inside footer is full width */
+        .footer .container {
+            width: 100%;
+            max-width: none;
+            /* Override Bootstrap's max-width for containers */
         }
 
         form {
@@ -59,47 +80,39 @@
             padding: 0.5rem;
             margin-bottom: 1rem;
             border-radius: 0.25rem;
-            /* Consistent with blocks.html */
             border: 1px solid #ced4da;
-            /* Bootstrap default for inputs */
         }
 
         input[type="submit"] {
             background: #007bff;
-            /* Bootstrap primary color */
             color: white;
             padding: 0.5rem 1rem;
             border: none;
             border-radius: 0.25rem;
-            /* Consistent with blocks.html */
             margin-top: 1rem;
             cursor: pointer;
         }
 
         input[type="submit"]:hover {
             background: #0056b3;
-            /* Darken the button on hover */
         }
 
         .btn-back {
             display: block;
             width: auto;
-            /* Allow the button to fit the text */
             margin: 2rem auto;
-            /* Center the button and add spacing */
             padding: 0.5rem 1rem;
-            /* Padding to increase button size */
             background: #007bff;
-            /* Bootstrap primary color */
             color: white;
             text-decoration: none;
             border-radius: 0.25rem;
-            /* Consistent with blocks.html */
         }
 
-        .btn-back:hover {
-            background: #0056b3;
-            /* Darken the button on hover */
+        .btn-back-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 2rem;
+            margin-bottom: 8rem;
         }
     </style>
 </head>
@@ -113,9 +126,12 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
             <div class="navbar-nav">
-                <a class="nav-item nav-link" href="/">Home</a>
+                <a class="nav-item nav-link active" href="/">Home</a>
                 <a class="nav-item nav-link" href="/transactions/new">New Transaction</a>
                 <a class="nav-item nav-link" href="/blocks">Mined Blocks</a>
+                <a class="nav-item nav-link" href="/nodes/add_node">Add Node</a>
+                <a class="nav-item nav-link" href="/vote">Vote</a>
+                <a class="nav-item nav-link" href="/nodes/node_totals">Result</a>
             </div>
         </div>
     </nav>
@@ -135,31 +151,42 @@
             <input type="submit" value="Submit" class="btn btn-primary">
         </form>
 
-        <a href="/" class="btn btn-primary btn-back">Back to Home</a>
+        <div class="btn-back-container">
+            <a href="/" class="btn btn-primary">Back to Home</a>
+        </div>
     </div>
 
-    <footer class="footer bg-dark text-white py-3">
+
+    <footer class="footer">
         <div class="container">
             <span>&copy; Blockchain Project</span>
         </div>
     </footer>
 
+
     <script>
         const transactionForm = document.getElementById("transactionForm");
         transactionForm.addEventListener("submit", (e) => {
             e.preventDefault();
-            console.log(new FormData(transactionForm));
+            console.log(JSON.stringify({
+                sender: document.getElementById("sender").value,
+                recipient: document.getElementById("recipient").value,
+                amount: document.getElementById("amount").value,
+            }));
             // sending a POST request to the server
             fetch("/transactions/new", {
                 method: "POST",
                 headers: { "Content-type": "application/json; charset=UTF-8" },
-                body: new FormData(transactionForm)
+                body: JSON.stringify({
+                    sender: document.getElementById("sender").value,
+                    recipient: document.getElementById("recipient").value,
+                    amount: document.getElementById("amount").value,
+                }),
             }).then((res) => {
                 if (res.status === 200) {
                     window.location.href = "/";
                 } else {
-                    const error = document.getElementById("error");
-                    error.innerHTML = "Invalid transaction";
+                    window.location.href = "/";
                 }
             });
         });
@@ -167,7 +194,6 @@
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
-
 </body>
 
 </html>
